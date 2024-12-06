@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodTunes - Your Personalized Music Experience</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        #videoElement {
+            width: 320px;
+            height: 240px;
+            transform: scaleX(-1);
+        }
+        #cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoodTunes</h1>
+        <iframe id="spotifyEmbed" src="https://open.spotify.com/embed/playlist/0T8gPodjgEoASsUoNLwcpD" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+        <h3>Current Gesture: <span id="gestureDisplay">No gesture detected</span></h3>
+        <video id="videoElement" autoplay></video>
+    </div>
+    <div id="cursor"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const gestureDisplay = document.getElementById('gestureDisplay');
+        const spotifyEmbed = document.getElementById('spotifyEmbed');
+        const cursor = document.getElementById('cursor');
+        let lastGesture = '';
+        let gestureStartTime = 0;
+        const gestureDuration = 1000; // 1 second
+
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                const gesture = detectGesture(landmarks);
+                gestureDisplay.textContent = gesture;
+
+                const indexTip = landmarks[8];
+                moveCursor(indexTip.x, indexTip.y);
+
+                if (gesture === lastGesture) {
+                    if (Date.now() - gestureStartTime >= gestureDuration) {
+                        handleGesture(gesture);
+                    }
+                } else {
+                    lastGesture = gesture;
+                    gestureStartTime = Date.now();
+                }
+            } else {
+                gestureDisplay.textContent = "No hand detected";
+                lastGesture = '';
+            }
+        }
+
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 320,
+            height: 240
+        });
+
+        camera.start();
+
+        function detectGesture(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const middleTip = landmarks[12];
+            const ringTip = landmarks[16];
+            const pinkyTip = landmarks[20];
+
+            if (isOpenPalm(landmarks)) {
+                return "Click";
+            } else if (thumbTip.y < indexTip.y && thumbTip.y < middleTip.y && thumbTip.y < ringTip.y && thumbTip.y < pinkyTip.y) {
+                return "Thumbs Up";
+            } else if (thumbTip.y > indexTip.y && thumbTip.y > middleTip.y && thumbTip.y > ringTip.y && thumbTip.y > pinkyTip.y) {
+                return "Thumbs Down";
+            } else {
+                return "Moving";
+            }
+        }
+
+        function isOpenPalm(landmarks) {
+            const fingertips = [landmarks[8], landmarks[12], landmarks[16], landmarks[20]];
+            const wrist = landmarks[0];
+            return fingertips.every(tip => tip.y < wrist.y);
+        }
+
+        function moveCursor(x, y) {
+            const screenX = window.innerWidth * (1 - x);
+            const screenY = window.innerHeight * y;
+            cursor.style.left = `${screenX}px`;
+            cursor.style.top = `${screenY}px`;
+        }
+
+        function handleGesture(gesture) {
+            switch(gesture) {
+                case "Thumbs Up":
+                    playSpotify();
+                    break;
+                case "Thumbs Down":
+                    pauseSpotify();
+                    break;
+                case "Click":
+                    performClick();
+                    break;
+            }
+        }
+
+        function performClick() {
+            const clickEvent = new MouseEvent('click', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            const element = document.elementFromPoint(
+                parseInt(cursor.style.left),
+                parseInt(cursor.style.top)
+            );
+            if (element) {
+                element.dispatchEvent(clickEvent);
+                console.log('Click performed on element:', element);
+            } else {
+                console.log('No element found at cursor position');
+            }
+        }
+
+        function playSpotify() {
+            spotifyEmbed.contentWindow.postMessage('{"command": "play"}', '*');
+        }
+
+        function pauseSpotify() {
+            spotifyEmbed.contentWindow.postMessage('{"command": "pause"}', '*');
+        }
+    </script>
+</body>
+</html>

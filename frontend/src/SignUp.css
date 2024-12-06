@@ -1,0 +1,93 @@
+.signup-card {
+    width: 400px;
+    margin: 100px auto;
+    padding: 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    /* Semi-transparent background */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    backdrop-filter: blur(10px);
+    /* Apply blur for the glass effect */
+    -webkit-backdrop-filter: blur(10px);
+    /* For Safari support */
+    /* border: 1px solid rgba(255, 255, 255, 0.3); */
+    border: 2px solid rgba(25, 255, 255, 0.3);
+    /* Light border for depth */
+    color: black;
+    /* Ensure text is visible */
+  }
+  
+  .signup-card h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: black;
+    text-decoration: underline;
+    /* Set heading text color to black */
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: black;
+    /* Set label text color to black */
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 2px solid rgba(25, 255, 255, 0.3);
+    /* Light border for inputs */
+    background-color: rgba(255, 255, 255, 0.1);
+    /* Slightly transparent input background */
+    color: black;
+    /* Set input text color to black */
+  }
+  
+  .form-group input::placeholder {
+    color: rgba(0, 0, 0, 0.7);
+    /* Darker placeholder color */
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(0, 123, 255, 0.7);
+    /* Semi-transparent button background */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* Smooth transition on hover */
+    /* margin-top: 10px;
+      margin-bottom: 5px; */
+    margin: 10px 0px;
+  }
+  
+  .btn-primary:hover {
+    background-color: rgba(0, 86, 179, 0.7);
+    /* Darker shade on hover */
+  }
+  
+  p {
+    color: black;
+    /* Ensure paragraph text is visible */
+    text-align: center;
+  }
+  
+  a {
+    color: #00c3ff;
+    /* Bright color for the link */
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+    /* Underline on hover */
+  }
+  
+  
+  
